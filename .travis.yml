@@ -1,20 +1,26 @@
----
-language: node_js
-
-sudo: false
-
+language: python
+python: 2.7
+env:
+ - WHEELHOUSE=$HOME/.cache/wheelhouse PIP_FIND_LINKS=file://$WHEELHOUSE PIP_WHEEL_DIR=$WHEELHOUSE
 cache:
   directories:
-    - node_modules
-
-before_install:
-  - "npm config set spin false"
-  - "npm install -g npm@^2"
-
+    - $HOME/.cache/pip
+    - $HOME/.cache/wheelhouse
 install:
-  - npm install -g bower
-  - npm install
-  - bower install
-
+ - pip wheel -r ./slybot/requirements.txt
+ - pip install --use-wheel -r ./slybot/requirements.txt
+ - pip install -e ./slybot[tests]
 script:
-  - npm test
+ - cd ./slybot
+ - nosetests --with-doctest
+ - cd ../
+before_deploy: "cd ./slybot"
+deploy:
+  provider: pypi
+  distributions: "sdist bdist_wheel"
+  user: scrapy
+  password:
+    secure: JaAKcy1AXWXDK3LXdjOtKyaVPCSFoCGCnW15g4f65E/8Fsi9ZzDfmBa4Equs3IQb/vs/if2SVrzJSr7arN7r9Z38Iv1mUXHkFAyA3Ym8mThfABBzzcUWEQhIHrCX0Tdlx9wQkkhs+PZhorlmRS4gg5s6DzPaeA2g8SCgmlRmFfA=
+  on:
+    all_branches: true
+    repo: ruairif/portia
